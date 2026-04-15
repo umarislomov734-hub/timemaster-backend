@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeMaster — Demo</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7C3AED">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TimeMaster">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:   #7C3AED;
+    --primary2:  #6D28D9;
+    --accent:    #A78BFA;
+    --bg:        #09090f;
+    --card:      #111119;
+    --border:    rgba(255,255,255,0.07);
+    --muted:     #555577;
+    --text:      #E8E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #09090f;
+    border-radius: 50px;
+    box-shadow: 0 0 0 2px #333, 0 0 60px rgba(100,80,255,0.4), inset 0 0 0 1px #222;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 50px;
+    background: #09090f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .notch {
+    width: 120px;
+    height: 30px;
+    background: #09090f;
+    border-radius: 0 0 20px 20px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  /* Screens */
+  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* Scrollable content */
+  .scroll { overflow-y: auto; flex: 1; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ── LOGIN ── */
+  .login-bg {
+    flex: 1;
+    background: linear-gradient(180deg, #1a1040 0%, #09090f 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    gap: 24px;
+  }
+  .logo-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 8px 32px rgba(108,92,231,0.5);
+  }
+  .logo-title { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 14px; color: #8888aa; text-align: center; }
+
+  .input-group { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .inp {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    padding: 16px 20px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .inp:focus { border-color: #7C3AED; }
+  .inp::placeholder { color: #555577; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    border: none;
+    border-radius: 16px;
+    padding: 18px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:active { opacity: 0.8; transform: scale(0.98); }
+
+  .link-text { font-size: 14px; color: #8888aa; cursor: pointer; text-align: center; }
+  .link-text span { color: #A78BFA; font-weight: 600; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    height: 72px;
+    background: #0e0e16;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 0 8px 8px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 8px 2px;
+    border-radius: 14px;
+    transition: background 0.2s;
+  }
+  .nav-item.active { background: rgba(124,58,237,0.15); }
+  .nav-icon { width: 24px; height: 24px; display:flex; align-items:center; justify-content:center; }
+  .nav-icon svg { width:22px; height:22px; stroke:#555577; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:stroke 0.2s; }
+  .nav-item.active .nav-icon svg { stroke: #A78BFA; }
+  .nav-label { font-size: 10px; color: #555577; font-weight: 600; transition: color 0.2s; }
+  .nav-item.active .nav-label { color: #A78BFA; }
+
+  /* ── HEADER ── */
+  .top-bar {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #09090f;
+    flex-shrink: 0;
+  }
+  .top-title { font-size: 24px; font-weight: 800; color: #fff; }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  /* ── HOME ── */
+  .home-content { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  .greeting-card {
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border-radius: 24px;
+    padding: 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .greeting-card::after {
+    content: '⏰';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 60px;
+    opacity: 0.2;
+  }
+  .greeting-sub { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+  .greeting-name { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+  .greeting-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .section-title { font-size: 17px; font-weight: 700; color: #fff; margin-top: 4px; }
+
+  .stats-row { display: flex; gap: 12px; }
+  .stat-card {
+    flex: 1;
+    background: #111119;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat-icon { font-size: 24px; }
+  .stat-val { font-size: 22px; font-weight: 800; color: #fff; }
+  .stat-lbl { font-size: 11px; color: #555577; font-weight: 600; }
+
+  .task-card {
+    background: #111119;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .task-header { padding: 18px 20px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .task-item {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-top: 1px solid #1a1a28;
+  }
+  .task-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .task-time { font-size: 12px; color: #555577; font-weight: 600; width: 44px; flex-shrink: 0; }
+  .task-name { font-size: 14px; color: #ccccdd; flex: 1; }
+  .task-dur { font-size: 11px; color: #444466; }
+
+  .cat-salomatlik { background: #00b894; }
+  .cat-ish { background: #7C3AED; }
+  .cat-dam { background: #fdcb6e; }
+  .cat-oila { background: #e17055; }
+  .cat-organish { background: #0984e3; }
+
+  /* ── ADVICE ── */
+  .advice-content { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .advice-input-wrap {
+    background: #111119;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+  }
+  .advice-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    height: 60px;
+  }
+  .advice-input::placeholder { color: #444466; }
+  .send-btn {
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    border: none;
+    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    align-self: flex-end;
+    flex-shrink: 0;
+  }
+
+  .advice-bubble {
+    border-radius: 20px;
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    animation: fadeIn 0.3s ease;
+  }
+  .advice-bubble.ai {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    color: #ccccdd;
+    border-bottom-left-radius: 4px;
+  }
+  .advice-bubble.user {
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+    max-width: 80%;
+  }
+  .bubble-label { font-size: 11px; color: #555577; margin-bottom: 4px; font-weight: 600; }
+
+  /* ── GOALS ── */
+  .goals-content { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+  .goal-card {
+    background: #111119;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .goal-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    border: 2px solid #2a2a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .goal-check.done { background: #7C3AED; border-color: #7C3AED; }
+  .cat-sel-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: #8888aa;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cat-sel-btn.active {
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: #fff;
+    font-weight: 700;
+  }
+  .goal-info { flex: 1; }
+  .goal-title { font-size: 15px; color: #fff; font-weight: 600; }
+  .goal-cat { font-size: 11px; color: #555577; margin-top: 3px; }
+  .goal-cat-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(108,92,231,0.2);
+    color: #A78BFA;
+  }
+
+  .add-goal-btn {
+    background: transparent;
+    border: 2px dashed #2a2a4a;
+    border-radius: 20px;
+    padding: 18px;
+    color: #555577;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .add-goal-btn:hover { border-color: #7C3AED; color: #A78BFA; }
+
+  /* ── PLANS ── */
+  .plans-content { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .plan-card {
+    background: #111119;
+    border: 2px solid rgba(255,255,255,0.07);
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .plan-card.popular { border-color: #7C3AED; }
+  .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .plan-name { font-size: 20px; font-weight: 800; color: #fff; }
+  .plan-price { font-size: 32px; font-weight: 900; color: #A78BFA; margin: 8px 0; }
+  .plan-price span { font-size: 14px; color: #555577; font-weight: 400; }
+  .plan-features { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .plan-feature { font-size: 13px; color: #8888aa; display: flex; align-items: center; gap: 8px; }
+  .plan-feature::before { content: '✓'; color: #7C3AED; font-weight: 700; }
+  .btn-plan {
+    margin-top: 16px;
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-plan.outline {
+    background: transparent;
+    border: 2px solid #2a2a4a;
+    color: #8888aa;
+  }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; color: #555577; padding: 20px; font-size: 14px; }
+  .spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255,255,255,0.07);
+    border-top-color: #7C3AED;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+
+  @keyframes spin    { to { transform: rotate(360deg); } }
+  @keyframes fadeIn  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn   { 0%{transform:scale(0.92);opacity:0} 60%{transform:scale(1.04)} 100%{transform:scale(1);opacity:1} }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  /* Micro-interactions */
+  .btn-primary  { transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s; }
+  .btn-primary:hover  { box-shadow: 0 4px 20px rgba(124,58,237,0.45); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.96); opacity: 0.85; }
+  .stat-card    { transition: transform 0.15s, border-color 0.15s; }
+  .stat-card:hover    { transform: translateY(-2px); border-color: rgba(124,58,237,0.4); }
+  .task-item    { transition: background 0.15s; }
+  .task-item:hover    { background: rgba(124,58,237,0.06); }
+  .nav-item     { transition: background 0.15s, transform 0.12s; }
+  .nav-item:active    { transform: scale(0.9); }
+  .goal-card    { transition: transform 0.15s; }
+  .goal-card:hover    { transform: translateY(-2px); }
+  .plan-card    { transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s; }
+  .plan-card:hover    { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(124,58,237,0.2); }
+
+  /* Greeting animation */
+  .greeting-card { animation: popIn 0.4s ease; }
+  .stat-card     { animation: slideUp 0.35s ease both; }
+  .stat-card:nth-child(2) { animation-delay: 0.06s; }
+  .stat-card:nth-child(3) { animation-delay: 0.12s; }
+
+  .tag { font-size: 11px; color: #A78BFA; background: rgba(108,92,231,0.15); padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+  .error-msg { color: #e17055; font-size: 13px; text-align: center; padding: 8px; }
+
+  /* ── LIGHT MODE ── */
+  .phone.light-mode { background: #f5f5f8 !important; }
+  .light-mode .status-bar,
+  .light-mode .top-bar,
+  .light-mode .bottom-nav { background: #ffffff !important; border-color: rgba(0,0,0,0.08) !important; }
+  .light-mode .scroll,
+  .light-mode .login-bg { background: #f0f0f6 !important; }
+  .light-mode .top-title { color: #1a1a2e !important; }
+  .light-mode .section-title { color: #1a1a2e !important; }
+  .light-mode .task-card,
+  .light-mode .stat-card,
+  .light-mode .goal-card,
+  .light-mode .plan-card,
+  .light-mode .advice-bubble.ai,
+  .light-mode [style*="background:#111119"],
+  .light-mode [style*="background: #111119"] { background: #ffffff !important; border-color: rgba(0,0,0,0.1) !important; }
+  .light-mode .task-name,
+  .light-mode .goal-title,
+  .light-mode .plan-name,
+  .light-mode .srow-label { color: #1a1a2e !important; }
+  .light-mode .task-time,
+  .light-mode .task-dur,
+  .light-mode .goal-cat,
+  .light-mode .stat-lbl,
+  .light-mode .nav-label,
+  .light-mode .bubble-label { color: #888899 !important; }
+  .light-mode .stat-val { color: #1a1a2e !important; }
+  .light-mode .nav-item.active { background: rgba(124,58,237,0.1) !important; }
+  .light-mode .nav-icon svg { stroke: #aaaacc !important; }
+  .light-mode .nav-item.active .nav-icon svg { stroke: #7C3AED !important; }
+  .light-mode .nav-item.active .nav-label { color: #7C3AED !important; }
+  .light-mode .greeting-card { background: linear-gradient(135deg, #7C3AED, #6D28D9) !important; }
+  .light-mode .inp { background: #f0f0f6 !important; border-color: rgba(0,0,0,0.1) !important; color: #1a1a2e !important; }
+  .light-mode .home-content { background: #f0f0f6; }
+  .light-mode .task-item:hover { background: rgba(124,58,237,0.05) !important; }
+  .light-mode #screen-settings [style*="background:#13131f"] { background: #fff !important; }
+  .light-mode [style*="color:#ccccdd"] { color: #1a1a2e !important; }
+  .light-mode [style*="color:#555577"] { color: #888899 !important; }
+  .light-mode [style*="color:#fff"] { color: #1a1a2e; }
+  .light-mode .advice-input { color: #1a1a2e !important; }
+  .light-mode .advice-input::placeholder { color: #aaaacc !important; }
+
+  /* Settings rows */
+  .srow {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-top: 1px solid #1a1a28;
+    cursor: default;
+  }
+  .srow-icon { font-size: 20px; flex-shrink: 0; width: 28px; text-align: center; }
+  .srow-label { flex: 1; font-size: 15px; color: #ccccdd; }
+  .srow-arrow { font-size: 20px; color: #333355; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span id="clock">17:00</span>
+    <span style="width:80px"></span>
+    <span>●●● 5G</span>
+  </div>
+
+  <!-- ═══ LOGIN SCREEN ═══ -->
+  <div class="screen active" id="screen-login">
+    <div class="login-bg">
+      <div class="logo-circle"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div>
+        <div class="logo-title" style="text-align:center">TimeMaster</div>
+        <div class="logo-sub" style="margin-top:6px"><span data-i18n="tagline">AI yordamida vaqtingizni boshqaring</span></div>
+      </div>
+      <div class="input-group">
+        <input class="inp" type="email" id="login-email" placeholder="Email" data-i18n-ph="email" value="xolmurod@test.com">
+        <input class="inp" type="password" id="login-pass" placeholder="Parol" data-i18n-ph="password" value="123456">
+        <div id="login-error" class="error-msg" style="display:none"></div>
+        <button class="btn-primary" onclick="doLogin()" data-i18n="login">Kirish</button>
+      </div>
+      <div class="link-text" onclick="showRegister()">Akkount yo'qmi? <span>Ro'yxatdan o'ting</span></div>
+      <div class="link-text" style="font-size:12px;margin-top:-8px;color:#444466">Demo: xolmurod@test.com / 123456</div>
+    </div>
+  </div>
+
+  <!-- ═══ HOME SCREEN ═══ -->
+  <div class="screen" id="screen-home">
+    <div class="top-bar">
+      <div class="top-title" data-i18n="home">Bosh sahifa</div>
+      <div class="avatar" onclick="showNotifs()" id="notif-btn" style="position:relative;font-size:0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#e17055;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff">3</div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="home-content">
+        <div class="greeting-card">
+          <div class="greeting-sub" data-i18n="welcome">Xush kelibsiz,</div>
+          <div class="greeting-name" id="user-name">Foydalanuvchi</div>
+          <div class="greeting-badge" id="plan-badge">Trial rejim</div>
+        </div>
+
+        <div class="section-title">Bugungi ko'rsatkichlar</div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/></svg></div>
+            <div class="stat-val" id="stat-tasks">0</div>
+            <div class="stat-lbl" data-i18n="tasks">Vazifa</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00b894" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+            <div class="stat-val" id="stat-goals">0</div>
+            <div class="stat-lbl" data-i18n="goals">Maqsad</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fdcb6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="stat-val" id="stat-done">0%</div>
+            <div class="stat-lbl" data-i18n="done">Bajarildi</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:8px">
+          <button id="tab-ai" onclick="switchTab('ai')" style="flex:1;padding:12px;border-radius:14px;border:none;background:#7C3AED;color:#fff;font-size:13px;font-weight:700;cursor:pointer">📅 AI Jadval</button>
+          <button id="tab-my" onclick="switchTab('my')" style="flex:1;padding:12px;border-radius:14px;border:2px solid rgba(255,255,255,0.07);background:transparent;color:#555577;font-size:13px;font-weight:700;cursor:pointer">✏️ Mening rejam</button>
+        </div>
+
+        <!-- AI Jadval -->
+        <div id="panel-ai" class="task-card">
+          <div class="task-header">
+            <span class="section-title" style="font-size:15px">AI Jadval</span>
+            <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:12px;border-radius:10px" onclick="generateSchedule()">AI tuzsin</button>
+          </div>
+          <div id="schedule-list">
+            <div class="loading"><div class="spinner"></div>Yuklanmoqda...</div>
+          </div>
+        </div>
+
+        <!-- Mening Rejam -->
+        <div id="panel-my" style="display:none;flex-direction:column;gap:10px">
+          <div class="task-card">
+            <div class="task-header">
+              <span class="section-title" style="font-size:15px">Mening rejam</span>
+              <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:12px;border-radius:10px" onclick="showAddTask()">+ Qo'shish</button>
+            </div>
+            <div id="my-tasks-list">
+              <div class="loading" style="color:#444466">Hali vazifa qo'shilmagan</div>
+            </div>
+          </div>
+
+          <!-- Add task form (hidden) -->
+          <div id="add-task-form" style="display:none;background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:18px;flex-direction:column;gap:10px">
+            <div style="font-size:14px;font-weight:700;color:#fff">Yangi vazifa</div>
+            <input class="inp" id="new-task-name" placeholder="Vazifa nomi" style="padding:12px 16px;font-size:14px">
+            <div style="display:flex;gap:8px">
+              <input class="inp" id="new-task-time" type="time" value="09:00" style="flex:1;padding:12px 16px;font-size:14px">
+              <input class="inp" id="new-task-dur" type="number" placeholder="min" min="5" max="480" value="30" style="width:80px;padding:12px 16px;font-size:14px">
+            </div>
+            <select class="inp" id="new-task-cat" style="padding:12px 16px;font-size:14px">
+              <option value="ish">💼 Ish</option>
+              <option value="salomatlik">🏃 Salomatlik</option>
+              <option value="organish">📚 O'rganish</option>
+              <option value="oila">👨‍👩‍👧 Oila</option>
+              <option value="dam">☕ Dam</option>
+            </select>
+            <div style="display:flex;gap:8px">
+              <button class="btn-primary" style="flex:1;padding:12px;font-size:14px" onclick="addMyTask()">Saqlash</button>
+              <button onclick="hideAddTask()" style="flex:1;padding:12px;font-size:14px;background:transparent;border:2px solid #2a2a4a;border-radius:14px;color:#555577;cursor:pointer">Bekor</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav" id="nav-home">
+      <div class="nav-item active" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCHEDULE SCREEN ═══ -->
+  <div class="screen" id="screen-schedule">
+    <div class="top-bar">
+      <div class="top-title" data-i18n="schedule">Kun tartibi</div>
+      <div style="font-size:13px;color:#555577" id="sched-date">Bugun</div>
+    </div>
+    <div class="scroll">
+      <div class="home-content">
+        <div class="task-card">
+          <div class="task-header">
+            <span class="section-title" style="font-size:15px">Bugungi vazifalar</span>
+            <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:12px;border-radius:10px" onclick="generateSchedule()">Yangilash</button>
+          </div>
+          <div id="schedule-list2">
+            <div class="loading"><div class="spinner"></div>Yuklanmoqda...</div>
+          </div>
+        </div>
+        <div id="advice-box" style="display:none" class="advice-bubble ai">
+          <div class="bubble-label">AI MASLAHAT</div>
+          <div id="advice-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item active" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ GOAL ADD MODAL ═══ -->
+  <div id="goal-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end;justify-content:center;">
+    <div style="background:#1a1a2e;border-radius:24px 24px 0 0;padding:24px;width:100%;">
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;">Yangi maqsad</div>
+      <input id="goal-title-input" class="inp" type="text" placeholder="Maqsad nomi..." style="margin-bottom:12px;">
+      <div style="font-size:12px;color:#8888aa;margin-bottom:8px;">Kategoriya:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="cat-btns">
+        <button onclick="selectCat(this,'ish')" class="cat-sel-btn active" data-cat="ish">ish</button>
+        <button onclick="selectCat(this,'salomatlik')" class="cat-sel-btn" data-cat="salomatlik">salomatlik</button>
+        <button onclick="selectCat(this,'oila')" class="cat-sel-btn" data-cat="oila">oila</button>
+        <button onclick="selectCat(this,'organish')" class="cat-sel-btn" data-cat="organish">o'rganish</button>
+        <button onclick="selectCat(this,'dam')" class="cat-sel-btn" data-cat="dam">dam</button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeGoalModal()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#aaa;font-size:14px;cursor:pointer;">Bekor</button>
+        <button onclick="saveGoal()" style="flex:2;padding:12px;border-radius:12px;border:none;background:#7C3AED;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GOALS SCREEN ═══ -->
+  <div class="screen" id="screen-goals">
+    <div class="top-bar">
+      <div class="top-title" data-i18n="myGoals">Maqsadlarim</div>
+      <div class="tag" id="goals-count">0 ta</div>
+    </div>
+    <div class="scroll">
+      <div class="goals-content" id="goals-list">
+        <div class="loading"><div class="spinner"></div>Yuklanmoqda...</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item active" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ ADVICE SCREEN ═══ -->
+  <div class="screen" id="screen-advice">
+    <div class="top-bar">
+      <div class="top-title" data-i18n="aiAdvice">AI Maslahat</div>
+      <div class="tag">Gemini</div>
+    </div>
+    <div class="scroll">
+      <div class="advice-content">
+        <div class="advice-bubble ai" style="animation:none">
+          <div class="bubble-label">AI COACH</div>
+          Salom! Men vaqt menejment bo'yicha AI yordamchingizman. Qanday muammoingiz bor?
+        </div>
+        <div id="chat-messages" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+    </div>
+    <div style="padding:12px 20px 8px;background:#09090f;flex-shrink:0">
+      <div class="advice-input-wrap">
+        <textarea class="advice-input" id="advice-input" placeholder="Savolingizni yozing..."></textarea>
+        <button class="send-btn" onclick="sendAdvice()">➤</button>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item active" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PLANS SCREEN ═══ -->
+  <!-- ═══ SETTINGS SCREEN ═══ -->
+  <div class="screen" id="screen-settings">
+    <div class="top-bar">
+      <div class="top-title" data-i18n="settings">Sozlamalar</div>
+    </div>
+    <div class="scroll">
+      <div style="padding:0 20px 24px;display:flex;flex-direction:column;gap:12px">
+
+        <!-- Akkaunt -->
+        <div style="background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:12px;font-weight:700;color:#555577;letter-spacing:1px">AKKAUNT</div>
+
+          <div style="padding:0 20px 6px;display:flex;align-items:center;gap:14px;border-top:1px solid #1a1a28">
+            <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#7C3AED,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;margin-top:12px;margin-bottom:12px">👤</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#fff" id="s-name">Foydalanuvchi</div>
+              <div style="font-size:13px;color:#555577;margin-top:2px" id="s-email">email@example.com</div>
+              <div style="margin-top:6px"><span class="tag" id="s-plan">Trial</span></div>
+            </div>
+          </div>
+
+          <div class="srow" onclick="goScreen('plans')">
+            <span class="srow-icon">👑</span><span class="srow-label">Tarifni yangilash</span><span class="srow-arrow">›</span>
+          </div>
+          <div class="srow" onclick="alert('Parolni o\'zgartirish')">
+            <span class="srow-icon">🔑</span><span class="srow-label">Parolni o'zgartirish</span><span class="srow-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- Bog'liq akkauntlar -->
+        <div style="background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:12px;font-weight:700;color:#555577;letter-spacing:1px">BOG'LIQ AKKAUNTLAR</div>
+          <div class="srow">
+            <span class="srow-icon">📱</span>
+            <div style="flex:1">
+              <div class="srow-label">Telefon raqami</div>
+              <div style="font-size:12px;color:#555577;margin-top:2px" id="s-phone">Ulangan emas</div>
+            </div>
+            <button onclick="linkPhone()" style="background:rgba(108,92,231,0.2);border:none;border-radius:8px;color:#A78BFA;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer">Ulash</button>
+          </div>
+          <div class="srow">
+            <span class="srow-icon">🔵</span>
+            <div style="flex:1">
+              <div class="srow-label">Google / Gmail</div>
+              <div style="font-size:12px;color:#555577;margin-top:2px" id="s-gmail">Ulangan emas</div>
+            </div>
+            <button onclick="linkGmail()" style="background:rgba(108,92,231,0.2);border:none;border-radius:8px;color:#A78BFA;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer">Ulash</button>
+          </div>
+        </div>
+
+        <!-- Ilova sozlamalari -->
+        <div style="background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:12px;font-weight:700;color:#555577;letter-spacing:1px">ILOVA SOZLAMALARI</div>
+
+          <div class="srow">
+            <span class="srow-icon">🌐</span>
+            <span class="srow-label">Til</span>
+            <select id="s-lang" onchange="changeLang()" style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:8px;color:#fff;font-size:13px;padding:6px 10px;cursor:pointer">
+              <option value="uz">O'zbek</option>
+              <option value="ru">Русский</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+
+          <div class="srow">
+            <span class="srow-icon" id="theme-icon">🌙</span>
+            <div style="flex:1">
+              <div class="srow-label">Tungi rejim</div>
+              <div style="font-size:12px;color:#555577;margin-top:2px" id="theme-label">Yoqilgan</div>
+            </div>
+            <div onclick="toggleTheme()" id="theme-toggle" style="width:44px;height:26px;background:#7C3AED;border-radius:13px;position:relative;cursor:pointer;transition:background 0.2s">
+              <div id="theme-knob" style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px;transition:right 0.2s"></div>
+            </div>
+          </div>
+
+          <div class="srow">
+            <span class="srow-icon">🔔</span>
+            <div style="flex:1">
+              <div class="srow-label">Bildirishnomalar</div>
+              <div style="font-size:12px;color:#555577;margin-top:2px">Eslatmalar yoqilgan</div>
+            </div>
+            <div onclick="toggleNotif(this)" style="width:44px;height:26px;background:#7C3AED;border-radius:13px;position:relative;cursor:pointer;transition:background 0.2s">
+              <div style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px;transition:right 0.2s"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Faol seanslar -->
+        <div style="background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:12px;font-weight:700;color:#555577;letter-spacing:1px">FAOL SEANSLAR</div>
+          <div class="srow">
+            <span class="srow-icon">💻</span>
+            <div style="flex:1">
+              <div class="srow-label">Hozirgi qurilma</div>
+              <div style="font-size:12px;color:#00b894;margin-top:2px">● Faol — Windows 10, Chrome</div>
+            </div>
+          </div>
+          <div class="srow" style="cursor:pointer" onclick="alert('Barcha seanslar tugatildi')">
+            <span class="srow-icon">🚪</span>
+            <span class="srow-label" style="color:#e17055">Barcha seanslardan chiqish</span>
+            <span class="srow-arrow" style="color:#e17055">›</span>
+          </div>
+        </div>
+
+        <!-- Tarif -->
+        <div style="background:#111119;border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:12px;font-weight:700;color:#555577;letter-spacing:1px">OBUNA</div>
+          <div class="srow" onclick="goScreen('plans')">
+            <span class="srow-icon">👑</span>
+            <div style="flex:1">
+              <div class="srow-label">Joriy tarif</div>
+              <div style="font-size:12px;color:#A78BFA;margin-top:2px" id="s-plan2">Trial — 7 kunlik bepul</div>
+            </div>
+            <span class="srow-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- Chiqish -->
+        <div style="background:#111119;border:1px solid #2a1515;border-radius:22px;overflow:hidden">
+          <div class="srow" onclick="doLogout()">
+            <span class="srow-icon">🚪</span>
+            <span class="srow-label" style="color:#e17055">Chiqish</span>
+          </div>
+        </div>
+
+        <div style="text-align:center;font-size:11px;color:#333355;padding:8px 0">TimeMaster v1.0.0</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item active" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PLANS SCREEN ═══ -->
+  <div class="screen" id="screen-plans">
+    <div class="top-bar">
+      <div class="top-bar" style="padding:12px 20px">
+        <div onclick="goScreen('settings')" style="font-size:22px;cursor:pointer;color:#A78BFA">‹</div>
+        <div class="top-title">Tariflar</div>
+        <div class="tag" id="current-plan-tag">Trial</div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="plans-content">
+        <div style="font-size:13px;color:#555577;text-align:center;padding:4px 0">7 kunlik bepul sinov davri tugagandan so'ng tarif tanlang</div>
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$5 <span>/oy</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">3 ta maqsad</div>
+            <div class="plan-feature">Kunlik AI jadval (1x)</div>
+            <div class="plan-feature">3 ta AI maslahat/kun</div>
+            <div class="plan-feature">7 kunlik tarix</div>
+          </div>
+          <button class="btn-plan outline">Tanlash</button>
+        </div>
+        <div class="plan-card popular">
+          <div class="popular-badge">MASHHUR TARIF</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$10 <span>/oy</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">10 ta maqsad</div>
+            <div class="plan-feature">Kunlik AI jadval (3x)</div>
+            <div class="plan-feature">20 ta AI maslahat/kun</div>
+            <div class="plan-feature">30 kunlik tarix</div>
+            <div class="plan-feature">Haftalik tahlil</div>
+          </div>
+          <button class="btn-plan">Tanlash</button>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Premium</div>
+          <div class="plan-price">$15 <span>/oy</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">Cheksiz maqsadlar</div>
+            <div class="plan-feature">Cheksiz AI jadval</div>
+            <div class="plan-feature">Cheksiz AI maslahat</div>
+            <div class="plan-feature">1 yillik tarix</div>
+            <div class="plan-feature">AI coach</div>
+            <div class="plan-feature">Ustuvor yordam</div>
+          </div>
+          <button class="btn-plan outline">Tanlash</button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('home')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="nav-label" data-i18n="home">Bosh</div></div>
+      <div class="nav-item" onclick="goScreen('schedule')"><div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="nav-label" data-i18n="sched">Jadval</div></div>
+      <div class="nav-item" onclick="goScreen('goals')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="nav-label" data-i18n="goalsNav">Maqsadlar</div></div>
+      <div class="nav-item" onclick="goScreen('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="nav-label" data-i18n="aiNav">AI</div></div>
+      <div class="nav-item" onclick="goScreen('settings')"><div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="nav-label" data-i18n="settNav">Sozlamalar</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bildirishnomalar paneli -->
+<div id="notif-panel" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.6)" onclick="hideNotifs()">
+  <div onclick="event.stopPropagation()" style="position:absolute;top:100px;left:20px;right:20px;background:#13131f;border:1px solid #2a2a4a;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.07)">
+      <span style="font-size:17px;font-weight:700;color:#fff">Bildirishnomalar</span>
+      <span onclick="clearNotifs()" style="font-size:12px;color:#A78BFA;cursor:pointer;font-weight:600">Hammasini o'qish</span>
+    </div>
+    <div id="notif-list">
+      <div class="notif-item unread">
+        <div class="notif-dot"></div>
+        <div class="notif-body">
+          <div class="notif-title">Bugungi jadval tayyor</div>
+          <div class="notif-text">AI 15 ta vazifa tuzdi. Ko'rib chiqing!</div>
+          <div class="notif-time">5 daqiqa oldin</div>
+        </div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-dot"></div>
+        <div class="notif-body">
+          <div class="notif-title">Maqsad eslatmasi</div>
+          <div class="notif-text">Bugun sport qilish vaqti keldi!</div>
+          <div class="notif-time">1 soat oldin</div>
+        </div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-dot"></div>
+        <div class="notif-body">
+          <div class="notif-title">Trial davri</div>
+          <div class="notif-text">Bepul sinov davri 7 kun qoldi. Tarifni tanlang.</div>
+          <div class="notif-time">Bugun</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot" style="background:transparent"></div>
+        <div class="notif-body">
+          <div class="notif-title" style="opacity:0.5">Xush kelibsiz!</div>
+          <div class="notif-text" style="opacity:0.4">TimeMaster ga ro'yxatdan o'tdingiz.</div>
+          <div class="notif-time">Kecha</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.notif-item { padding:14px 20px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid #1a1a28; }
+.notif-item.unread { background:rgba(108,92,231,0.06); }
+.notif-dot { width:8px;height:8px;border-radius:50%;background:#7C3AED;flex-shrink:0;margin-top:6px; }
+.notif-body { flex:1; }
+.notif-title { font-size:14px;font-weight:700;color:#fff; }
+.notif-text { font-size:13px;color:#777799;margin-top:3px; }
+.notif-time { font-size:11px;color:#444466;margin-top:5px; }
+</style>
+
+<script>
+const API = 'http://172.10.20.44:8000';
+let token = null;
+let scheduleData = [];
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// Screen navigation
+function goScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'goals') loadGoals();
+  if (name === 'schedule') loadSchedule();
+}
+
+// ── AUTH ──
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  try {
+    const r = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.detail || 'Xato'; errEl.style.display='block'; return; }
+    token = d.access_token;
+    document.getElementById('user-name').textContent = d.name;
+    document.getElementById('plan-badge').textContent = planLabel(d.plan);
+    document.getElementById('current-plan-tag').textContent = planLabel(d.plan);
+    loadSettings(d.name, email, d.plan);
+    applyLang(currentLang);
+    goScreen('home');
+    loadSchedule();
+    loadGoalCount();
+  } catch(e) {
+    errEl.textContent = 'Server bilan ulanib bo\'lmadi'; errEl.style.display='block';
+  }
+}
+
+function planLabel(p) {
+  return {trial:'Trial (7 kun)', starter:'Starter $5', pro:'Pro $10', premium:'Premium $15'}[p] || p;
+}
+
+function showRegister() {
+  alert('Ro\'yxatdan o\'tish: POST /auth/register\n\nDemo uchun: xolmurod@test.com / 123456');
+}
+
+// ── SCHEDULE ──
+const CAT_COLORS = { salomatlik:'#00b894', ish:'#7C3AED', dam:'#fdcb6e', oila:'#e17055', organish:'#0984e3' };
+
+function renderScheduleItems(items, containerId) {
+  const el = document.getElementById(containerId);
+  if (!items || !items.length) { el.innerHTML = '<div class="loading">Jadval mavjud emas</div>'; return; }
+  el.innerHTML = items.map(t => `
+    <div class="task-item">
+      <div class="task-dot" style="background:${CAT_COLORS[t.category]||'#7C3AED'}"></div>
+      <div class="task-time">${t.time}</div>
+      <div class="task-name">${t.task}</div>
+      <div class="task-dur">${t.duration ? t.duration+'m' : ''}</div>
+    </div>
+  `).join('');
+}
+
+async function loadSchedule() {
+  if (!token) return;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('sched-date').textContent = today;
+
+  try {
+    const r = await fetch(API + '/schedule/today', { headers: {'Authorization':'Bearer '+token} });
+    const d = await r.json();
+    if (d && d.content) {
+      const items = JSON.parse(d.content);
+      scheduleData = items;
+      renderScheduleItems(items, 'schedule-list');
+      renderScheduleItems(items, 'schedule-list2');
+      countUp(document.getElementById('stat-tasks'), items.length);
+      if (d.ai_advice) {
+        document.getElementById('advice-box').style.display = 'block';
+        document.getElementById('advice-text').textContent = d.ai_advice;
+      }
+    } else {
+      document.getElementById('schedule-list').innerHTML = '<div class="loading">Jadval yo\'q. "AI tuzsin" tugmasini bosing.</div>';
+      document.getElementById('schedule-list2').innerHTML = '<div class="loading">Jadval yo\'q. "Yangilash" tugmasini bosing.</div>';
+    }
+  } catch(e) {
+    document.getElementById('schedule-list').innerHTML = '<div class="loading">Xato yuz berdi</div>';
+  }
+}
+
+async function generateSchedule() {
+  if (!token) return;
+  document.getElementById('schedule-list').innerHTML = '<div class="loading"><div class="spinner"></div>AI jadval tuzmoqda...</div>';
+  document.getElementById('schedule-list2').innerHTML = '<div class="loading"><div class="spinner"></div>AI jadval tuzmoqda...</div>';
+
+  try {
+    const r = await fetch(API + '/schedule/generate', {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+token, 'Content-Type':'application/json'},
+      body: JSON.stringify({})
+    });
+    const d = await r.json();
+    if (d.content) {
+      const items = JSON.parse(d.content);
+      renderScheduleItems(items, 'schedule-list');
+      renderScheduleItems(items, 'schedule-list2');
+      countUp(document.getElementById('stat-tasks'), items.length);
+      if (d.ai_advice) {
+        document.getElementById('advice-box').style.display = 'block';
+        document.getElementById('advice-text').textContent = d.ai_advice;
+      }
+    }
+  } catch(e) {
+    document.getElementById('schedule-list').innerHTML = '<div class="loading">Xato</div>';
+  }
+}
+
+// ── GOALS ──
+async function loadGoals() {
+  if (!token) return;
+  try {
+    const r = await fetch(API + '/goals', { headers: {'Authorization':'Bearer '+token} });
+    const goals = await r.json();
+    document.getElementById('goals-count').textContent = goals.length + ' ta';
+    const activeGoals = goals.filter(g=>!g.is_done).length;
+    countUp(document.getElementById('stat-goals'), activeGoals);
+    const done = goals.length ? Math.round(goals.filter(g=>g.is_done).length/goals.length*100) : 0;
+    countUp(document.getElementById('stat-done'), done, '%');
+
+    const el = document.getElementById('goals-list');
+    const catColors = {ish:'#7C3AED', salomatlik:'#00b894', oila:'#e17055', organish:'#0984e3', dam:'#fdcb6e'};
+    el.innerHTML = goals.map(g => `
+      <div class="goal-card">
+        <div class="goal-check ${g.is_done?'done':''}" onclick="markDone(${g.id})">
+          ${g.is_done ? '✓' : ''}
+        </div>
+        <div class="goal-info">
+          <div class="goal-title" style="${g.is_done?'text-decoration:line-through;opacity:0.5':''}">${g.title}</div>
+          <div class="goal-cat">${g.category}</div>
+        </div>
+        <div class="goal-cat-badge">${g.category}</div>
+        <div onclick="deleteGoal(${g.id})" style="margin-left:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(239,68,68,0.12);cursor:pointer;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+      </div>
+    `).join('') + `
+      <div class="add-goal-btn" onclick="addGoalPrompt()">+ Yangi maqsad qo'shish</div>
+    `;
+  } catch(e) {
+    document.getElementById('goals-list').innerHTML = '<div class="loading">Xato</div>';
+  }
+}
+
+async function loadGoalCount() {
+  if (!token) return;
+  try {
+    const r = await fetch(API + '/goals', { headers: {'Authorization':'Bearer '+token} });
+    const goals = await r.json();
+    countUp(document.getElementById('stat-goals'), goals.filter(g=>!g.is_done).length);
+  } catch(e) {}
+}
+
+async function markDone(id) {
+  try {
+    await fetch(API + '/goals/' + id + '/done', { method:'PATCH', headers: {'Authorization':'Bearer '+token} });
+    loadGoals();
+  } catch(e) {}
+}
+
+async function deleteGoal(id) {
+  if (!confirm('Maqsadni o\'chirasizmi?')) return;
+  try {
+    await fetch(API + '/goals/' + id, { method:'DELETE', headers: {'Authorization':'Bearer '+token} });
+    loadGoals();
+    loadGoalCount();
+  } catch(e) {}
+}
+
+let selectedCat = 'ish';
+
+function addGoalPrompt() {
+  selectedCat = 'ish';
+  document.getElementById('goal-title-input').value = '';
+  document.querySelectorAll('.cat-sel-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.cat-sel-btn[data-cat="ish"]').classList.add('active');
+  const modal = document.getElementById('goal-modal');
+  modal.style.display = 'flex';
+}
+
+function selectCat(btn, cat) {
+  selectedCat = cat;
+  document.querySelectorAll('.cat-sel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function closeGoalModal() {
+  document.getElementById('goal-modal').style.display = 'none';
+}
+
+async function saveGoal() {
+  const title = document.getElementById('goal-title-input').value.trim();
+  if (!title) return;
+  closeGoalModal();
+  try {
+    await fetch(API + '/goals', {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+token, 'Content-Type':'application/json'},
+      body: JSON.stringify({title, category: selectedCat})
+    });
+    loadGoals();
+  } catch(e) {}
+}
+
+// ── AI ADVICE ──
+async function sendAdvice() {
+  const input = document.getElementById('advice-input');
+  const msg = input.value.trim();
+  if (!msg || !token) return;
+  input.value = '';
+
+  const chat = document.getElementById('chat-messages');
+
+  // User bubble
+  const userDiv = document.createElement('div');
+  userDiv.innerHTML = `<div class="advice-bubble user">${msg}</div>`;
+  chat.appendChild(userDiv);
+
+  // Loading
+  const loadDiv = document.createElement('div');
+  loadDiv.innerHTML = `<div class="advice-bubble ai"><div class="spinner" style="width:20px;height:20px;margin:4px auto"></div></div>`;
+  chat.appendChild(loadDiv);
+  chat.scrollIntoView({behavior:'smooth',block:'end'});
+
+  try {
+    const r = await fetch(API + '/ai/advice', {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+token, 'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const d = await r.json();
+    loadDiv.innerHTML = `<div class="bubble-label">AI COACH</div><div class="advice-bubble ai">${d.advice || d.detail}</div>`;
+  } catch(e) {
+    loadDiv.innerHTML = `<div class="advice-bubble ai">Server bilan bog'lanib bo'lmadi</div>`;
+  }
+  chat.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+// Enter tugmasi
+document.getElementById('advice-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdvice(); }
+});
+
+// ── LANGUAGE SYSTEM ──
+const LANGS = {
+  uz: {
+    tagline:"AI yordamida vaqtingizni boshqaring", login:'Kirish', email:'Email', password:'Parol',
+    home:'Bosh sahifa', welcome:'Xush kelibsiz,', todayStats:"Bugungi ko'rsatkichlar",
+    tasks:'Vazifa', goals:'Maqsad', done:'Bajarildi',
+    schedule:'Kun tartibi', myGoals:'Maqsadlarim', aiAdvice:'AI Maslahat', settings:'Sozlamalar',
+    sched:'Jadval', goalsNav:'Maqsadlar', aiNav:'AI', settNav:'Sozlamalar',
+    noAcc:"Akkount yo'qmi?", register:"Ro'yxatdan o'ting",
+    aiGenerate:'AI tuzsin', refresh:'Yangilash',
+    // Settings page
+    secAccount:'AKKAUNT', secLinked:"BOG'LIQ AKKAUNTLAR", secApp:'ILOVA SOZLAMALARI',
+    secSessions:'FAOL SEANSLAR', secSub:'OBUNA',
+    upgradePlan:'Tarifni yangilash', changePass:"Parolni o'zgartirish",
+    phone:'Telefon raqami', notLinked:'Ulangan emas', connect:'Ulash',
+    langLabel:'Til', nightMode:'Tungi rejim', notifLabel:'Bildirishnomalar',
+    notifSub:'Eslatmalar yoqilgan', nightOn:'Yoqilgan', nightOff:"O'chirilgan",
+    currentDevice:'Hozirgi qurilma', logoutAll:'Barcha seanslardan chiqish',
+    currentPlan:'Joriy tarif', logout:'Chiqish',
+    // AI screen
+    aiCoachHello:"Salom! Men vaqt menejment bo'yicha AI yordamchingizman. Qanday muammoingiz bor?",
+    sendPh:"Savolingizni yozing...",
+    // Schedule
+    todayTasks:'Bugungi vazifalar', aiPanel:'AI Jadval', myPanel:'Mening rejam',
+    noSchedule:"Jadval yo'q. \"AI tuzsin\" tugmasini bosing.",
+    addTask:"Qo'shish", noTasks:'Hali vazifa qo\'shilmagan', newTask:'Yangi vazifa',
+    save:'Saqlash', cancel:'Bekor',
+    // Goals
+    addGoal:"+ Yangi maqsad qo'shish",
+    // Greeting
+    trialBadge:'Trial (7 kun)',
+  },
+  ru: {
+    tagline:'Управляйте временем с помощью AI', login:'Войти', email:'Эл. почта', password:'Пароль',
+    home:'Главная', welcome:'Добро пожаловать,', todayStats:'Показатели сегодня',
+    tasks:'Задачи', goals:'Цели', done:'Выполнено',
+    schedule:'Расписание', myGoals:'Мои цели', aiAdvice:'AI Советник', settings:'Настройки',
+    sched:'График', goalsNav:'Цели', aiNav:'AI', settNav:'Настройки',
+    noAcc:'Нет аккаунта?', register:'Зарегистрироваться',
+    aiGenerate:'AI составит', refresh:'Обновить',
+    secAccount:'АККАУНТ', secLinked:'СВЯЗАННЫЕ АККАУНТЫ', secApp:'НАСТРОЙКИ ПРИЛОЖЕНИЯ',
+    secSessions:'АКТИВНЫЕ СЕССИИ', secSub:'ПОДПИСКА',
+    upgradePlan:'Обновить тариф', changePass:'Изменить пароль',
+    phone:'Номер телефона', notLinked:'Не подключено', connect:'Подключить',
+    langLabel:'Язык', nightMode:'Тёмный режим', notifLabel:'Уведомления',
+    notifSub:'Напоминания включены', nightOn:'Включён', nightOff:'Выключен',
+    currentDevice:'Текущее устройство', logoutAll:'Выйти со всех устройств',
+    currentPlan:'Текущий тариф', logout:'Выйти',
+    aiCoachHello:'Привет! Я ваш AI-помощник по управлению временем. Какой у вас вопрос?',
+    sendPh:'Введите вопрос...',
+    todayTasks:'Задачи на сегодня', aiPanel:'AI Расписание', myPanel:'Мой план',
+    noSchedule:'Расписание отсутствует. Нажмите «AI составит».',
+    addTask:'Добавить', noTasks:'Задач пока нет', newTask:'Новая задача',
+    save:'Сохранить', cancel:'Отмена',
+    addGoal:'+ Добавить цель',
+    trialBadge:'Trial (7 дней)',
+  },
+  en: {
+    tagline:'Manage your time with AI', login:'Sign In', email:'Email', password:'Password',
+    home:'Home', welcome:'Welcome back,', todayStats:"Today's Stats",
+    tasks:'Tasks', goals:'Goals', done:'Done',
+    schedule:'Schedule', myGoals:'My Goals', aiAdvice:'AI Advisor', settings:'Settings',
+    sched:'Schedule', goalsNav:'Goals', aiNav:'AI', settNav:'Settings',
+    noAcc:'No account?', register:'Sign Up',
+    aiGenerate:'AI Generate', refresh:'Refresh',
+    secAccount:'ACCOUNT', secLinked:'LINKED ACCOUNTS', secApp:'APP SETTINGS',
+    secSessions:'ACTIVE SESSIONS', secSub:'SUBSCRIPTION',
+    upgradePlan:'Upgrade Plan', changePass:'Change Password',
+    phone:'Phone Number', notLinked:'Not connected', connect:'Connect',
+    langLabel:'Language', nightMode:'Dark Mode', notifLabel:'Notifications',
+    notifSub:'Reminders enabled', nightOn:'Enabled', nightOff:'Disabled',
+    currentDevice:'Current device', logoutAll:'Sign out of all devices',
+    currentPlan:'Current plan', logout:'Sign Out',
+    aiCoachHello:"Hi! I'm your AI time management coach. What would you like help with?",
+    sendPh:'Type your question...',
+    todayTasks:"Today's tasks", aiPanel:'AI Schedule', myPanel:'My Plan',
+    noSchedule:'No schedule yet. Tap "AI Generate".',
+    addTask:'Add', noTasks:'No tasks yet', newTask:'New Task',
+    save:'Save', cancel:'Cancel',
+    addGoal:'+ Add Goal',
+    trialBadge:'Trial (7 days)',
+  }
+};
+
+let currentLang = 'uz';
+
+function applyLang(code) {
+  currentLang = code;
+  const t = LANGS[code] || LANGS.uz;
+
+  // data-i18n text
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+
+  // placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (t[key]) el.placeholder = t[key];
+  });
+
+  // Special dynamic elements
+  const greetSub = document.querySelector('.greeting-sub');
+  if (greetSub) greetSub.textContent = t.welcome;
+
+  // AI generate buttons
+  document.querySelectorAll('[onclick=\"generateSchedule()\"]').forEach(btn => {
+    if (btn.textContent.trim().length < 20) btn.textContent = t.aiGenerate;
+  });
+
+  // Login link
+  const linkEl = document.querySelector('.link-text');
+  if (linkEl) linkEl.innerHTML = t.noAcc + ' <span>' + t.register + '</span>';
+
+  // Advice input placeholder & first message
+  const advInput = document.getElementById('advice-input');
+  if (advInput) advInput.placeholder = t.sendPh;
+  const firstBubble = document.querySelector('#screen-advice .advice-bubble.ai');
+  if (firstBubble) {
+    const bl = firstBubble.querySelector('.bubble-label');
+    if (bl) bl.nextSibling && (bl.nextSibling.textContent = '\n' + t.aiCoachHello);
+    else firstBubble.textContent = t.aiCoachHello;
+  }
+
+  // ── Settings page text ──
+  function setText(sel, key) {
+    const el = document.querySelector(sel);
+    if (el && t[key]) el.textContent = t[key];
+  }
+  function setAll(sel, key) {
+    document.querySelectorAll(sel).forEach(el => { if (t[key]) el.textContent = t[key]; });
+  }
+
+  // Section headers
+  document.querySelectorAll('#screen-settings [style*="letter-spacing:1px"]').forEach((el, i) => {
+    const keys = ['secAccount','secLinked','secApp','secSessions','secSub'];
+    if (t[keys[i]]) el.textContent = t[keys[i]];
+  });
+
+  // Settings rows — srow-label elements
+  const srows = document.querySelectorAll('#screen-settings .srow-label');
+  const srowKeys = ['upgradePlan','changePass','phone','','langLabel','nightMode','notifLabel','currentDevice','logoutAll','currentPlan','logout'];
+  srows.forEach((el, i) => { if (srowKeys[i] && t[srowKeys[i]]) el.textContent = t[srowKeys[i]]; });
+
+  // Connect buttons
+  document.querySelectorAll('#screen-settings button').forEach(btn => {
+    if (btn.textContent === 'Ulash' || btn.textContent === 'Подключить' || btn.textContent === 'Connect') {
+      btn.textContent = t.connect;
+    }
+  });
+
+  // "Ulangan emas" texts
+  document.querySelectorAll('#screen-settings [id="s-phone"], #screen-settings [id="s-gmail"]').forEach(el => {
+    if (['Ulangan emas','Не подключено','Not connected'].includes(el.textContent)) {
+      el.textContent = t.notLinked;
+    }
+  });
+
+  // Night mode label
+  const nightLbl = document.getElementById('theme-label');
+  if (nightLbl) nightLbl.textContent = isDark ? t.nightOn : t.nightOff;
+
+  // Notifications sub label
+  const notifSubs = document.querySelectorAll('#screen-settings .srow');
+  notifSubs.forEach(row => {
+    const lbl = row.querySelector('.srow-label');
+    if (lbl && (lbl.textContent === 'Bildirishnomalar' || lbl.textContent === 'Уведомления' || lbl.textContent === 'Notifications')) {
+      lbl.textContent = t.notifLabel;
+      const sub = row.querySelector('[style*="font-size:12px"]');
+      if (sub) sub.textContent = t.notifSub;
+    }
+  });
+
+  // Schedule screen
+  const schTitle = document.querySelector('#screen-schedule .section-title');
+  if (schTitle) schTitle.textContent = t.todayTasks;
+  const aiPanelTitle = document.querySelector('#panel-ai .section-title');
+  if (aiPanelTitle) aiPanelTitle.textContent = t.aiPanel;
+  const myPanelTitle = document.querySelector('#panel-my .section-title');
+  if (myPanelTitle) myPanelTitle.textContent = t.myPanel;
+
+  // Tabs
+  const tabAI = document.getElementById('tab-ai');
+  if (tabAI) tabAI.textContent = '📅 ' + t.aiPanel;
+  const tabMy = document.getElementById('tab-my');
+  if (tabMy) tabMy.textContent = '✏️ ' + t.myPanel;
+
+  // Logout button
+  const logoutRow = document.querySelector('#screen-settings .srow[onclick="doLogout()"] .srow-label');
+  if (logoutRow) logoutRow.textContent = t.logout;
+}
+
+function changeLang() {
+  const code = document.getElementById('s-lang').value;
+  applyLang(code);
+}
+
+// ── COUNT-UP ANIMATION ──
+function countUp(el, target, suffix='', duration=800) {
+  const start = Date.now();
+  const isFloat = String(target).includes('.');
+  const run = () => {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const val = isFloat ? (target * ease).toFixed(1) : Math.round(target * ease);
+    el.textContent = val + suffix;
+    if (progress < 1) requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+}
+
+// ── NOTIFICATIONS ──
+function showNotifs() {
+  const p = document.getElementById('notif-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+function hideNotifs() {
+  document.getElementById('notif-panel').style.display = 'none';
+}
+function clearNotifs() {
+  document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('unread'));
+  document.querySelectorAll('.notif-dot').forEach(el => el.style.background = 'transparent');
+  document.getElementById('notif-badge').style.display = 'none';
+  hideNotifs();
+}
+
+// ── SETTINGS ──
+let isDark = true;
+let notifOn = true;
+
+function loadSettings(name, email, plan) {
+  document.getElementById('s-name').textContent  = name;
+  document.getElementById('s-email').textContent = email;
+  document.getElementById('s-plan').textContent  = planLabel(plan);
+  document.getElementById('s-plan2').textContent = planLabel(plan);
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  const phone  = document.querySelector('.phone');
+  const toggle = document.getElementById('theme-toggle');
+  const knob   = document.getElementById('theme-knob');
+  const icon   = document.getElementById('theme-icon');
+  const lbl    = document.getElementById('theme-label');
+
+  if (isDark) {
+    phone.classList.remove('light-mode');
+    toggle.style.background = '#7C3AED';
+    knob.style.right = '3px';
+    icon.textContent = '🌙';
+    lbl.textContent = themeLbl('dark');
+  } else {
+    phone.classList.add('light-mode');
+    toggle.style.background = '#7C3AED';
+    knob.style.right = '21px';
+    icon.textContent = '☀️';
+    lbl.textContent = themeLbl('light');
+  }
+}
+
+function themeLbl(m) {
+  const t = LANGS[currentLang] || LANGS.uz;
+  return m === 'dark'
+    ? (currentLang==='ru'?'Включён':currentLang==='en'?'Enabled':"Yoqilgan")
+    : (currentLang==='ru'?'Выключен':currentLang==='en'?'Disabled':"O'chirilgan");
+}
+
+function toggleNotif(el) {
+  notifOn = !notifOn;
+  el.style.background = notifOn ? '#7C3AED' : '#2a2a3a';
+  el.querySelector('div').style.right = notifOn ? '3px' : '21px';
+}
+
+function linkPhone() {
+  const p = prompt("Telefon raqamingizni kiriting (+998...):");
+  if (p) { document.getElementById('s-phone').textContent = p; }
+}
+
+function linkGmail() {
+  const g = prompt("Gmail manzilingizni kiriting:");
+  if (g) { document.getElementById('s-gmail').textContent = g; }
+}
+
+function doLogout() {
+  token = null;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-login').classList.add('active');
+}
+
+// ── TABS (home) ──
+let myTasks = JSON.parse(localStorage.getItem('myTasks') || '[]');
+
+function switchTab(tab) {
+  const isAI = tab === 'ai';
+  document.getElementById('panel-ai').style.display = isAI ? 'block' : 'none';
+  document.getElementById('panel-my').style.display = isAI ? 'none' : 'flex';
+  document.getElementById('tab-ai').style.background = isAI ? '#7C3AED' : 'transparent';
+  document.getElementById('tab-ai').style.color = isAI ? '#fff' : '#555577';
+  document.getElementById('tab-ai').style.border = isAI ? 'none' : '2px solid rgba(255,255,255,0.07)';
+  document.getElementById('tab-my').style.background = !isAI ? '#7C3AED' : 'transparent';
+  document.getElementById('tab-my').style.color = !isAI ? '#fff' : '#555577';
+  document.getElementById('tab-my').style.border = !isAI ? 'none' : '2px solid rgba(255,255,255,0.07)';
+  if (!isAI) renderMyTasks();
+}
+
+function showAddTask() {
+  const f = document.getElementById('add-task-form');
+  f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
+}
+function hideAddTask() {
+  document.getElementById('add-task-form').style.display = 'none';
+}
+
+function addMyTask() {
+  const name = document.getElementById('new-task-name').value.trim();
+  const time = document.getElementById('new-task-time').value;
+  const dur  = parseInt(document.getElementById('new-task-dur').value) || 30;
+  const cat  = document.getElementById('new-task-cat').value;
+  if (!name) return;
+
+  myTasks.push({ id: Date.now(), name, time, dur, cat, done: false });
+  myTasks.sort((a,b) => a.time.localeCompare(b.time));
+  localStorage.setItem('myTasks', JSON.stringify(myTasks));
+  document.getElementById('new-task-name').value = '';
+  hideAddTask();
+  renderMyTasks();
+}
+
+function toggleMyTask(id) {
+  myTasks = myTasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+  localStorage.setItem('myTasks', JSON.stringify(myTasks));
+  renderMyTasks();
+}
+
+function deleteMyTask(id) {
+  myTasks = myTasks.filter(t => t.id !== id);
+  localStorage.setItem('myTasks', JSON.stringify(myTasks));
+  renderMyTasks();
+}
+
+function renderMyTasks() {
+  const el = document.getElementById('my-tasks-list');
+  if (!myTasks.length) {
+    el.innerHTML = '<div class="loading" style="color:#444466">Hali vazifa qo\'shilmagan</div>';
+    return;
+  }
+  el.innerHTML = myTasks.map(t => `
+    <div class="task-item" style="opacity:${t.done?0.4:1}">
+      <div class="task-dot" style="background:${CAT_COLORS[t.cat]||'#7C3AED'};cursor:pointer;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0"
+        onclick="toggleMyTask(${t.id})">${t.done?'✓':''}</div>
+      <div class="task-time">${t.time}</div>
+      <div class="task-name" style="${t.done?'text-decoration:line-through':''}">${t.name}</div>
+      <div class="task-dur">${t.dur}m</div>
+      <div onclick="deleteMyTask(${t.id})" style="color:#444466;cursor:pointer;font-size:16px;padding:0 4px">✕</div>
+    </div>
+  `).join('');
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>
